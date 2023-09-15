@@ -1,10 +1,16 @@
 import psycopg2
+from decouple import config
+
+HOST = config('BD_HOST')
+DATABASE = config('BD_DATABASE')
+USER = config('BD_USER')
+PASSWORD = config('BD_PASSWORD')
 
 conexion = psycopg2.connect(
-    host="localhost",
-    database="bdenergy",
-    user="mario",
-    password="70143086"
+    database=DATABASE,
+    user=USER,
+    password=PASSWORD,
+    host=HOST
 )
 
 # Crea un cursor para ejecutar comandos SQL
