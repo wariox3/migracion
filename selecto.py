@@ -2,6 +2,9 @@ import mysql.connector
 import psycopg2
 from decouple import config
 
+codigo_empresa = 16
+schema = "gamboa"
+
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
     user=config('MYSQL_USUARIO'),
@@ -15,7 +18,7 @@ conexionPS = psycopg2.connect(user=config('PG_USUARIO'),
                                 database=config('PG_BASEDATOS'))
 
 cursorPg = conexionPS.cursor()
-cursorPg.execute(f"SET search_path TO noel")
+cursorPg.execute(f"SET search_path TO {schema}")
 cursorMysql = conexion.cursor()
  
 def entero_a_boolean(valor_entero):
@@ -43,7 +46,7 @@ def identificacion(valor):
 
 def importar_item():
     try: 
-        cursorMysql.execute("SELECT codigo_item_pk, nombre, vr_precio, codigo, referencia, producto, servicio, afecta_inventario, codigo_impuesto_iva_venta_fk FROM item where codigo_empresa_fk = 16")
+        cursorMysql.execute(f"SELECT codigo_item_pk, nombre, vr_precio, codigo, referencia, producto, servicio, afecta_inventario, codigo_impuesto_iva_venta_fk FROM item where codigo_empresa_fk = {codigo_empresa}")
         registros = cursorMysql.fetchall()
         for registro in registros:
             print(registro[0])
@@ -66,10 +69,10 @@ def importar_item():
 
 def importar_tercero():
     try: 
-        cursorMysql.execute("SELECT codigo_tercero_pk, numero_identificacion, nombre_corto, direccion, telefono, celular, email, \
+        cursorMysql.execute(f"SELECT codigo_tercero_pk, numero_identificacion, nombre_corto, direccion, telefono, celular, email, \
                             codigo_regimen_fk, codigo_tipo_persona_fk, digito_verificacion, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, \
                             codigo_postal, barrio, codigo_ciuu, plazo_pago, codigo_identificacion_fk, ciudad.codigo_reddoc \
-                            FROM tercero LEFT JOIN ciudad ON tercero.codigo_ciudad_fk = ciudad.codigo_ciudad_pk where codigo_empresa_fk = 16")
+                            FROM tercero LEFT JOIN ciudad ON tercero.codigo_ciudad_fk = ciudad.codigo_ciudad_pk where codigo_empresa_fk = {codigo_empresa}")
         registros = cursorMysql.fetchall()
         for registro in registros:
             print(registro[0])
@@ -153,8 +156,33 @@ def importar_tercero():
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
+def importar_movimiento():
+    try: 
+        cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk \
+                             \
+                             \
+                            FROM movimiento where codigo_empresa_fk = {codigo_empresa}")
+        registros = cursorMysql.fetchall()
+        contador = 1
+        for registro in registros:
+            print(f"{contador} {registro[0]} {registro[1]}")      
+            contador += 1
+            sql = ""  
+            '''sql = f"INSERT INTO gen_documento (id \
+                             \
+                            ) \
+                            VALUES ({registro[0]}, '{registro[1]}', {nombre_corto}, '{registro[3]}', {telefono}, {celular}, '{registro[6]}', {registro[19]}, {identificacion_id}, \
+                            {regimen_id}, {tipo_persona_id}, {registro[9]}, {nombre1}, {nombre2}, {apellido1}, {apellido2}, \
+                            '{registro[14]}', {barrio}, {codigo_ciuu}, {plazo_pago_id})"
+            cursorPg.execute(sql)'''
+    except psycopg2.Error as e:
+        print(f"Error al insertar registros: {sql}", e)
+    #conexionPS.commit()
+
 #importar_item()  
-importar_tercero()
+#importar_tercero()
+importar_movimiento()    
+
 cursorMysql.close()
 conexion.close()
 cursorPg.close()
