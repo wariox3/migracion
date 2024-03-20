@@ -158,26 +158,29 @@ def importar_tercero():
 
 def importar_movimiento():
     try: 
-        cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk \
-                             \
-                             \
-                            FROM movimiento where codigo_empresa_fk = {codigo_empresa}")
+        cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk, vr_subtotal, vr_total_bruto, vr_total_neto \
+                            FROM movimiento where codigo_empresa_fk = {codigo_empresa} AND codigo_movimiento_tipo_fk = 'FAC' limit 1")
         registros = cursorMysql.fetchall()
-        contador = 1
         for registro in registros:
-            print(f"{contador} {registro[0]} {registro[1]}")      
-            contador += 1
-            sql = ""  
-            '''sql = f"INSERT INTO gen_documento (id \
-                             \
-                            ) \
-                            VALUES ({registro[0]}, '{registro[1]}', {nombre_corto}, '{registro[3]}', {telefono}, {celular}, '{registro[6]}', {registro[19]}, {identificacion_id}, \
-                            {regimen_id}, {tipo_persona_id}, {registro[9]}, {nombre1}, {nombre2}, {apellido1}, {apellido2}, \
-                            '{registro[14]}', {barrio}, {codigo_ciuu}, {plazo_pago_id})"
-            cursorPg.execute(sql)'''
+            print(f"{registro[0]} {registro[1]}")      
+            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, base_impuesto, descuento, impuesto, estado_aprobado, \
+                            documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente) \
+                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, 0, 0, true, \
+                            1, 1, 1, 0, 0, 0)"
+            cursorPg.execute(sql)
+            cursorMysql.execute(f"SELECT codigo_movimiento_detalle_pk, cantidad, vr_precio, vr_subtotal, vr_total, porcentaje_descuento, codigo_item_fk \
+                            FROM movimiento_detalle where codigo_movimiento_fk = {registro[0]}")
+            registrosDetalles = cursorMysql.fetchall()
+            for registroDetalle in registrosDetalles:
+                print(f"Detalle: {registroDetalle[0]}")
+                sql = f"INSERT INTO gen_documento_detalle (id, cantidad, precio, subtotal, total_bruto, total, \
+                                descuento, porcentaje_descuento, documento_id, item_id) \
+                                VALUES ({registroDetalle[0]}, {registroDetalle[1]}, {registroDetalle[2]}, {registroDetalle[3]}, {registroDetalle[4]}, {registroDetalle[4]}, \
+                                0, {registroDetalle[5]}, {registro[0]}, {registroDetalle[6]})"
+                cursorPg.execute(sql)
     except psycopg2.Error as e:
         print(f"Error al insertar registros: {sql}", e)
-    #conexionPS.commit()
+    conexionPS.commit()
 
 #importar_item()  
 #importar_tercero()
