@@ -3,7 +3,6 @@ import psycopg2
 from decouple import config
 
 codigo_empresa = 16
-schema = "gamboa"
 
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
@@ -18,7 +17,7 @@ conexionPS = psycopg2.connect(user=config('PG_USUARIO'),
                                 database=config('PG_BASEDATOS'))
 
 cursorPg = conexionPS.cursor()
-cursorPg.execute(f"SET search_path TO {schema}")
+cursorPg.execute(f"SET search_path TO {config('PG_ESQUEMA')}")
 cursorMysql = conexion.cursor()
  
 def entero_a_boolean(valor_entero):
@@ -156,6 +155,19 @@ def importar_tercero():
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
+def importar_resolucion():
+    try: 
+        cursorMysql.execute(f"SELECT codigo_resolucion_pk, numero_desde, numero_hasta, fecha_desde, fecha_hasta, prefijo, numero, ambiente FROM resolucion where codigo_empresa_fk = {codigo_empresa}")
+        registros = cursorMysql.fetchall()
+        for registro in registros:
+            print(registro[0])
+            sql = f"INSERT INTO gen_resolucion (id, consecutivo_desde, consecutivo_hasta, fecha_desde, fecha_hasta, prefijo, numero, ambiente) \
+                    VALUES ({registro[0]}, {registro[1]}, {registro[2]}, '{registro[3]}', '{registro[4]}', '{registro[5]}', '{registro[6]}', '{registro[7]}')"
+            cursorPg.execute(sql)      
+        conexionPS.commit()
+    except psycopg2.Error as e:
+        print(f"Error al insertar registros: {sql}", e)
+
 def importar_movimiento():
     try: 
         cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk, vr_subtotal, vr_total_bruto, vr_total_neto \
@@ -184,7 +196,8 @@ def importar_movimiento():
 
 #importar_item()  
 #importar_tercero()
-importar_movimiento()    
+#importar_resolucion()    
+#importar_movimiento()    
 
 cursorMysql.close()
 conexion.close()
