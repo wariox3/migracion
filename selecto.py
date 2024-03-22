@@ -43,6 +43,14 @@ def identificacion(valor):
         respuesta = 2
     return respuesta
 
+def formatear_texto(texto):
+    if texto is None:
+        texto = "NULL"
+    else:
+        texto = texto.replace("'", "")
+        texto = f"'{texto}'" 
+    return texto
+
 def importar_item():
     try: 
         cursorMysql.execute(f"SELECT codigo_item_pk, nombre, vr_precio, codigo, referencia, producto, servicio, afecta_inventario, codigo_impuesto_iva_venta_fk FROM item where codigo_empresa_fk = {codigo_empresa}")
@@ -168,19 +176,28 @@ def importar_resolucion():
     except psycopg2.Error as e:
         print(f"Error al insertar registros: {sql}", e)
 
-def importar_movimiento():
+def importar_movimiento(tipo):
     try: 
-        cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk, vr_subtotal, vr_total_bruto, vr_total_neto \
-                            FROM movimiento where codigo_empresa_fk = {codigo_empresa} AND codigo_movimiento_tipo_fk = 'FAC' limit 1")
+        cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk, vr_subtotal, vr_total_bruto, vr_total_neto, \
+                            numero, fecha, fecha_vence, vr_base_iva, vr_iva, codigo_tercero_fk, codigo_resolucion_fk, comentario, cue, \
+                            documento_soporte \
+                            FROM movimiento where codigo_empresa_fk = {codigo_empresa} AND codigo_movimiento_tipo_fk = '{tipo}'")
         registros = cursorMysql.fetchall()
         for registro in registros:
-            print(f"{registro[0]} {registro[1]}")      
-            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, base_impuesto, descuento, impuesto, estado_aprobado, \
-                            documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente) \
-                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, 0, 0, true, \
-                            1, 1, 1, 0, 0, 0)"
+            print(f"{registro[0]} {registro[1]}")  
+            soporte = formatear_texto(registro[14])
+            comentario = formatear_texto(registro[12])                
+            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, \
+                            documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
+                            fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
+                            soporte) \
+                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, \
+                            1, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
+                            '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {registro[11]}, {comentario}, '{registro[13]}', \
+                            {soporte})"
             cursorPg.execute(sql)
-            cursorMysql.execute(f"SELECT codigo_movimiento_detalle_pk, cantidad, vr_precio, vr_subtotal, vr_total, porcentaje_descuento, codigo_item_fk \
+            cursorMysql.execute(f"SELECT codigo_movimiento_detalle_pk, cantidad, vr_precio, vr_subtotal, vr_total, porcentaje_descuento, codigo_item_fk, \
+                                porcentaje_iva, vr_base_iva, vr_iva \
                             FROM movimiento_detalle where codigo_movimiento_fk = {registro[0]}")
             registrosDetalles = cursorMysql.fetchall()
             for registroDetalle in registrosDetalles:
@@ -188,16 +205,20 @@ def importar_movimiento():
                 sql = f"INSERT INTO gen_documento_detalle (id, cantidad, precio, subtotal, total_bruto, total, \
                                 descuento, porcentaje_descuento, documento_id, item_id) \
                                 VALUES ({registroDetalle[0]}, {registroDetalle[1]}, {registroDetalle[2]}, {registroDetalle[3]}, {registroDetalle[4]}, {registroDetalle[4]}, \
-                                0, {registroDetalle[5]}, {registro[0]}, {registroDetalle[6]})"
+                                0, {registroDetalle[5]}, {registro[0]}, {registroDetalle[6]})" 
                 cursorPg.execute(sql)
+                if registroDetalle[7] == 19:
+                    sql = f"INSERT INTO gen_documento_impuesto (base, porcentaje, total, documento_detalle_id, impuesto_id) \
+                        VALUES ({registroDetalle[8]}, {registroDetalle[7]}, {registroDetalle[9]}, {registroDetalle[0]}, 1)" 
+                    cursorPg.execute(sql)
     except psycopg2.Error as e:
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
-#importar_item()  
+importar_item()  
 #importar_tercero()
 #importar_resolucion()    
-#importar_movimiento()    
+#importar_movimiento('FAC')    
 
 cursorMysql.close()
 conexion.close()
