@@ -169,8 +169,8 @@ def importar_resolucion():
         registros = cursorMysql.fetchall()
         for registro in registros:
             print(registro[0])
-            sql = f"INSERT INTO gen_resolucion (id, consecutivo_desde, consecutivo_hasta, fecha_desde, fecha_hasta, prefijo, numero, ambiente) \
-                    VALUES ({registro[0]}, {registro[1]}, {registro[2]}, '{registro[3]}', '{registro[4]}', '{registro[5]}', '{registro[6]}', '{registro[7]}')"
+            sql = f"INSERT INTO gen_resolucion (id, consecutivo_desde, consecutivo_hasta, fecha_desde, fecha_hasta, prefijo, numero) \
+                    VALUES ({registro[0]}, {registro[1]}, {registro[2]}, '{registro[3]}', '{registro[4]}', '{registro[5]}', '{str(registro[6])}')"
             cursorPg.execute(sql)      
         conexionPS.commit()
     except psycopg2.Error as e:
@@ -187,11 +187,11 @@ def importar_movimiento(tipo):
             print(f"{registro[0]} {registro[1]}")  
             soporte = formatear_texto(registro[14])
             comentario = formatear_texto(registro[12])                
-            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, \
+            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, estado_electronico_enviado, estado_electronico_notificado, \
                             documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
                             fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
                             soporte) \
-                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, \
+                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, false, false, \
                             1, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
                             '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {registro[11]}, {comentario}, '{registro[13]}', \
                             {soporte})"
@@ -215,10 +215,10 @@ def importar_movimiento(tipo):
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
-importar_item()  
+#importar_item()  
 #importar_tercero()
 #importar_resolucion()    
-#importar_movimiento('FAC')    
+importar_movimiento('FAC')    
 
 cursorMysql.close()
 conexion.close()
