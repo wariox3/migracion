@@ -176,25 +176,30 @@ def importar_resolucion():
     except psycopg2.Error as e:
         print(f"Error al insertar registros: {sql}", e)
 
-def importar_movimiento(tipo):
+def importar_movimiento():
     try: 
         cursorMysql.execute(f"SELECT codigo_movimiento_pk, codigo_movimiento_tipo_fk, vr_subtotal, vr_total_bruto, vr_total_neto, \
                             numero, fecha, fecha_vence, vr_base_iva, vr_iva, codigo_tercero_fk, codigo_resolucion_fk, comentario, cue, \
-                            documento_soporte \
-                            FROM movimiento where codigo_empresa_fk = {codigo_empresa} AND codigo_movimiento_tipo_fk = '{tipo}'")
+                            documento_soporte, codigo_movimiento_fk \
+                            FROM movimiento where codigo_empresa_fk = {codigo_empresa} AND codigo_movimiento_tipo_fk = 'FAC' OR codigo_movimiento_tipo_fk = 'NC'")
         registros = cursorMysql.fetchall()
         for registro in registros:
             print(f"{registro[0]} {registro[1]}")  
+            documentoTipo = 1
+            if registro[1] == 'FAC':
+                documentoTipo = 1
+            if registro[1] == 'NC':
+                documentoTipo = 2                
             soporte = formatear_texto(registro[14])
             comentario = formatear_texto(registro[12])                
-            sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, estado_electronico_enviado, estado_electronico_notificado, \
+            sql = f"INSERT INTO gen_documento (id, documento_tipo, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, estado_electronico_enviado, estado_electronico_notificado, \
                             documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
                             fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
-                            soporte) \
-                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, false, false, \
+                            soporte, documento_referencia_id) \
+                            VALUES ({registro[0]}, {documentoTipo}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, false, false, \
                             1, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
                             '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {registro[11]}, {comentario}, '{registro[13]}', \
-                            {soporte})"
+                            {soporte}, {registro[15]})"
             cursorPg.execute(sql)
             cursorMysql.execute(f"SELECT codigo_movimiento_detalle_pk, cantidad, vr_precio, vr_subtotal, vr_total, porcentaje_descuento, codigo_item_fk, \
                                 porcentaje_iva, vr_base_iva, vr_iva \
@@ -215,10 +220,10 @@ def importar_movimiento(tipo):
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
-#importar_item()  
+importar_item()  
 #importar_tercero()
 #importar_resolucion()    
-importar_movimiento('FAC')    
+#importar_movimiento()    
 
 cursorMysql.close()
 conexion.close()
