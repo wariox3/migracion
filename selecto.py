@@ -228,7 +228,7 @@ def importar_movimiento():
 #importar_item()  
 #importar_tercero()
 #importar_resolucion()    
-#importar_movimiento()    
+importar_movimiento()    
 
 cursorMysql.close()
 conexion.close()
