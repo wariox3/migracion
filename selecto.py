@@ -2,7 +2,7 @@ import mysql.connector
 import psycopg2
 from decouple import config
 
-codigo_empresa = 19
+codigo_empresa = 0
 
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
@@ -235,10 +235,10 @@ def importar_movimiento():
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
-importar_item()  
-importar_tercero()
-importar_resolucion()    
-importar_movimiento()    
+#importar_item()  
+#importar_tercero()
+#importar_resolucion()    
+#importar_movimiento()    
 
 cursorMysql.close()
 conexion.close()
