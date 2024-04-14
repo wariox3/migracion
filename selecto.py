@@ -2,7 +2,7 @@ import mysql.connector
 import psycopg2
 from decouple import config
 
-codigo_empresa = 16
+codigo_empresa = 19
 
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
@@ -51,6 +51,13 @@ def formatear_texto(texto):
         texto = f"'{texto}'" 
     return texto
 
+def formatear_numero(texto):
+    if texto is None:
+        texto = "NULL"
+    else:
+        texto = f"{texto}" 
+    return texto
+
 def importar_item():
     try: 
         cursorMysql.execute(f"SELECT codigo_item_pk, nombre, vr_precio, codigo, referencia, producto, servicio, afecta_inventario, codigo_impuesto_iva_venta_fk FROM item where codigo_empresa_fk = {codigo_empresa}")
@@ -60,13 +67,10 @@ def importar_item():
             producto = entero_a_boolean(registro[5])
             servicio = entero_a_boolean(registro[6])
             inventario = entero_a_boolean(registro[7])
-            if registro[1] is None:
-                nombre = "NULL"
-            else:
-                nombre = registro[1]
-                nombre = nombre.replace("'", "")
-                nombre = f"'{nombre}'"
-            sql = f"INSERT INTO gen_item (id, nombre, costo, precio, codigo, referencia, producto, servicio, inventario, existencia, disponible) VALUES ({registro[0]}, {nombre}, 0, {registro[2]}, {registro[3]}, '{registro[4]}', {producto}, {servicio}, {inventario}, 0, 0)"
+            nombre = formatear_texto(registro[1])    
+            codigo = formatear_texto(registro[3])
+            referencia = formatear_texto(registro[4])
+            sql = f"INSERT INTO gen_item (id, nombre, costo, precio, codigo, referencia, producto, servicio, inventario, existencia, disponible) VALUES ({registro[0]}, {nombre}, 0, {registro[2]}, {codigo}, {referencia}, {producto}, {servicio}, {inventario}, 0, 0)"
             cursorPg.execute(sql)
             if registro[8] == "I19":
                 cursorPg.execute(f"INSERT INTO gen_item_impuesto (impuesto_id, item_id) VALUES (1,{registro[0]})")        
@@ -93,6 +97,11 @@ def importar_tercero():
             else:
                 tipo_persona_id = 2
             
+            if registro[9] is None:
+                digito_verificacion = "NULL"
+            else:
+                digito_verificacion = f"'{registro[9]}'"
+
             plazo_pago_id = 1
             if registro[17] == 15:
                 plazo_pago_id = 3
@@ -156,7 +165,7 @@ def importar_tercero():
                             regimen_id, tipo_persona_id, digito_verificacion, nombre1, nombre2, apellido1, apellido2, \
                             codigo_postal, barrio, codigo_ciuu, plazo_pago_id) \
                             VALUES ({registro[0]}, '{registro[1]}', {nombre_corto}, '{registro[3]}', {telefono}, {celular}, '{registro[6]}', {registro[19]}, {identificacion_id}, \
-                            {regimen_id}, {tipo_persona_id}, {registro[9]}, {nombre1}, {nombre2}, {apellido1}, {apellido2}, \
+                            {regimen_id}, {tipo_persona_id}, {digito_verificacion}, {nombre1}, {nombre2}, {apellido1}, {apellido2}, \
                             '{registro[14]}', {barrio}, {codigo_ciuu}, {plazo_pago_id})"
             cursorPg.execute(sql)
     except psycopg2.Error as e:
@@ -196,14 +205,15 @@ def importar_movimiento():
             else:
                 documentoReferencia = registro[15]
             soporte = formatear_texto(registro[14])
-            comentario = formatear_texto(registro[12])                
+            comentario = formatear_texto(registro[12])              
+            resolucion_id = formatear_numero(registro[11])        
             sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, estado_electronico_enviado, estado_electronico_notificado, \
                             documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
                             fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
                             soporte, documento_referencia_id) \
                             VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, false, false, \
                             {documentoTipo}, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
-                            '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {registro[11]}, {comentario}, '{registro[13]}', \
+                            '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {resolucion_id}, {comentario}, '{registro[13]}', \
                             {soporte}, {documentoReferencia})"            
             cursorPg.execute(sql)
             cursorMysql.execute(f"SELECT codigo_movimiento_detalle_pk, cantidad, vr_precio, vr_subtotal, vr_total, porcentaje_descuento, codigo_item_fk, \
@@ -225,9 +235,9 @@ def importar_movimiento():
         print(f"Error al insertar registros: {sql}", e)
     conexionPS.commit()
 
-#importar_item()  
-#importar_tercero()
-#importar_resolucion()    
+importar_item()  
+importar_tercero()
+importar_resolucion()    
 importar_movimiento()    
 
 cursorMysql.close()
