@@ -79,7 +79,7 @@ def eliminar_anio(anio):
         os.listdir(directorio_backup)
         cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino, d.identificador \
                             FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk \
-                            WHERE d.codigo_masivo_tipo_fk = 'TteGuia' AND (g.fecha_ingreso >= '{anio}-01-01 00:00' AND g.fecha_ingreso <= '{anio}-12-31 23:00') LIMIT 500000")
+                            WHERE d.codigo_masivo_tipo_fk = 'TteGuia' AND (g.fecha_ingreso >= '{anio}-01-01 00:00' AND g.fecha_ingreso <= '{anio}-12-31 23:00') LIMIT 100000")
         registros = cursorMysql.fetchall()
         for registro in registros:         
             ruta = f"{directorio_raiz}/{registro[1]}/{registro[2]}"
@@ -106,7 +106,7 @@ def eliminar_anio(anio):
 #limpiar_errores_identificacion()
 #limpiar_errores_singuia()
 #SELECT YEAR(g.fecha_ingreso) AS año, COUNT(*) AS total_ingresos FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk WHERE d.codigo_masivo_tipo_fk = 'TteGuia'GROUP BY YEAR(g.fecha_ingreso)
-eliminar_anio(2021)
+eliminar_anio(2022)
 
 cursorMysql.close()
 conexion.close()
