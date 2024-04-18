@@ -1,7 +1,7 @@
 import mysql.connector
-import psycopg2
 import paramiko
 from decouple import config
+import os
 
 empresa = "energy"
 directorio_raiz = f"/mnt/almacenamiento_{empresa}/{empresa}/masivo/TteGuia"
@@ -72,10 +72,11 @@ def limpiar_errores_singuia():
 
 def eliminar_anio(anio):    
     directorio_backup = f"/mnt/almacenamiento_{empresa}/{empresa}/backup/{anio}"
-    client.connect(host, port, username, password)
-    sftp = client.open_sftp()
+    #client.connect(host, port, username, password)
+    #sftp = client.open_sftp()
     try:
-        sftp.stat(directorio_backup)
+        #sftp.stat(directorio_backup)
+        os.listdir(directorio_backup)
         cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino, d.identificador \
                             FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk \
                             WHERE d.codigo_masivo_tipo_fk = 'TteGuia' AND (g.fecha_ingreso >= '{anio}-01-01 00:00' AND g.fecha_ingreso <= '{anio}-12-31 23:00') LIMIT 10000")
@@ -85,8 +86,10 @@ def eliminar_anio(anio):
             rutaDestino = f"{directorio_backup}/{registro[2]}"
             mensaje = ""
             try:
-                sftp.stat(ruta)
-                sftp.rename(ruta, rutaDestino)
+                #sftp.stat(ruta)
+                #sftp.rename(ruta, ruta)
+                os.listdir(directorio_backup)
+                os.rename(ruta, rutaDestino)
                 mensaje = "Archivo movido a backup"            
             except FileNotFoundError:
                 mensaje = "No existe"
