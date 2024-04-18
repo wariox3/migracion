@@ -1,5 +1,5 @@
 import mysql.connector
-import paramiko
+#import paramiko
 from decouple import config
 import os
 
@@ -18,8 +18,8 @@ port = 22
 username = config('SFTP_USER')
 password = config('SFTP_PASSWORD')
 
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#client = paramiko.SSHClient()
+#client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 def limpiar_errores_identificacion():
     client.connect(host, port, username, password)
