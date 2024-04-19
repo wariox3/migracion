@@ -1,9 +1,9 @@
 import mysql.connector
-#import paramiko
+import paramiko
 from decouple import config
 import os
 
-empresa = "energy"
+empresa = "veloenvios"
 directorio_raiz = f"/mnt/almacenamiento_{empresa}/{empresa}/masivo/TteGuia"
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
@@ -18,8 +18,8 @@ port = 22
 username = config('SFTP_USER')
 password = config('SFTP_PASSWORD')
 
-#client = paramiko.SSHClient()
-#client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 def limpiar_errores_identificacion():
     client.connect(host, port, username, password)
@@ -106,7 +106,7 @@ def eliminar_anio(anio):
 #limpiar_errores_identificacion()
 #limpiar_errores_singuia()
 #SELECT YEAR(g.fecha_ingreso) AS año, COUNT(*) AS total_ingresos FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk WHERE d.codigo_masivo_tipo_fk = 'TteGuia'GROUP BY YEAR(g.fecha_ingreso)
-eliminar_anio(2022)
+#eliminar_anio(2022)
 
 cursorMysql.close()
 conexion.close()
