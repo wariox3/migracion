@@ -7,7 +7,7 @@ from decouple import config
 #18	MARIO ANDRES ESTRADA ZULUAGA
 #19	HAROLD ANDRES ORTEGA SEGURA
 
-codigo_empresa = 18
+codigo_empresa = 16
 
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
