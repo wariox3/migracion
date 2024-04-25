@@ -2,7 +2,12 @@ import mysql.connector
 import psycopg2
 from decouple import config
 
-codigo_empresa = 0
+#4	SKIN & HAIR
+#16	FILTROS COLOMBIA
+#18	MARIO ANDRES ESTRADA ZULUAGA
+#19	HAROLD ANDRES ORTEGA SEGURA
+
+codigo_empresa = 18
 
 conexion = mysql.connector.connect(
     host=config('MYSQL_SERVIDOR'),
@@ -211,7 +216,7 @@ def importar_movimiento():
                             documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
                             fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
                             soporte, documento_referencia_id) \
-                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, false, false, false, false, false, \
+                            VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, true, false, false, false, false, \
                             {documentoTipo}, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
                             '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {resolucion_id}, {comentario}, '{registro[13]}', \
                             {soporte}, {documentoReferencia})"            
