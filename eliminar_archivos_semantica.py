@@ -152,7 +152,7 @@ def eliminar_anio(anio):
 #limpiar_errores_singuia()
 #SELECT YEAR(g.fecha_ingreso) AS año, COUNT(*) AS total_ingresos FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk WHERE d.backup = false AND d.codigo_masivo_tipo_fk = 'TteGuia'GROUP BY YEAR(g.fecha_ingreso)
 #archivo_no_existe()
-eliminar_anio(2021)
+eliminar_anio(2022)
 
 cursorMysql.close()
 conexion.close()
