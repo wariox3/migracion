@@ -74,7 +74,9 @@ def archivo_no_existe():
     #client.connect(host, port, username, password)
     #sftp = client.open_sftp()
     pagina = 0
-    registros_por_pagina = 5
+    registros_por_pagina = 100000
+    correctos = 0
+    invalidos = 0    
     while True:
         offset = pagina * registros_por_pagina
         cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino FROM \
@@ -86,9 +88,11 @@ def archivo_no_existe():
         for registro in registros:         
             ruta = f"{directorio_raiz}/{registro[1]}/{registro[2]}"
             if os.path.exists(ruta):
-                print(f"{registro[0]} {ruta} archivo verificado")
+                #print(f"{registro[0]} {ruta} archivo verificado")
+                correctos = correctos + 1
             else:
                 #cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")        
+                invalidos = invalidos + 1
                 print(f"{registro[0]} {ruta} no se encontro el archivo")
             '''try:
                 sftp.stat(ruta)           
