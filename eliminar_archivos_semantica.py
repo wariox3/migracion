@@ -1,5 +1,5 @@
 import mysql.connector
-import paramiko
+#import paramiko
 from decouple import config
 import os
 
