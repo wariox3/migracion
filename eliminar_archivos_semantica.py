@@ -13,10 +13,10 @@ conexion = mysql.connector.connect(
     database=config('MYSQL_BASEDATOS'))
 cursorMysql = conexion.cursor()
 
-#host = config('SFTP_HOST')
-#port = 22
-#username = config('SFTP_USER')
-#password = config('SFTP_PASSWORD')
+host = config('SFTP_HOST')
+port = 22
+username = config('SFTP_USER')
+password = config('SFTP_PASSWORD')
 
 #client = paramiko.SSHClient()
 #client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -70,6 +70,39 @@ def limpiar_errores_singuia():
         print(f"{registro[0]} {ruta} {mensaje}")    
     conexion.commit()
 
+def archivo_no_existe():    
+    #client.connect(host, port, username, password)
+    #sftp = client.open_sftp()
+    pagina = 0
+    registros_por_pagina = 5
+    while True:
+        offset = pagina * registros_por_pagina
+        cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino FROM \
+                            doc_masivo d WHERE d.backup = false AND d.codigo_masivo_tipo_fk = 'TteGuia' ORDER BY d.codigo_masivo_pk LIMIT {registros_por_pagina} OFFSET {offset}")
+        registros = cursorMysql.fetchall()
+        if not registros or pagina == 3:        
+            break   
+             
+        for registro in registros:         
+            ruta = f"{directorio_raiz}/{registro[1]}/{registro[2]}"
+            if os.path.exists(ruta):
+                print(f"{registro[0]} {ruta} archivo verificado")
+            else:
+                #cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")        
+                print(f"{registro[0]} {ruta} no se encontro el archivo")
+            '''try:
+                sftp.stat(ruta)           
+                print(f"{registro[0]} {ruta} archivo verificado")
+            except FileNotFoundError:
+                try:
+                    #cursorMysql.execute(f"UPDATE doc_masivo SET backup = true where codigo_masivo_pk={registro[0]}")        
+                    print(f"{registro[0]} {ruta} no se encontro el archivo")
+                except mysql.connector.Error as error:
+                    print(f"No se pudo eliminar el registro: {error}")'''
+        pagina += 1            
+    #conexion.commit()        
+
+
 def eliminar_anio(anio):    
     directorio_backup = f"/mnt/almacenamiento_{empresa}/{empresa}/backup/{anio}"
     #client.connect(host, port, username, password)
@@ -113,7 +146,8 @@ def eliminar_anio(anio):
 #limpiar_errores_identificacion()
 #limpiar_errores_singuia()
 #SELECT YEAR(g.fecha_ingreso) AS año, COUNT(*) AS total_ingresos FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk WHERE d.backup = false AND d.codigo_masivo_tipo_fk = 'TteGuia'GROUP BY YEAR(g.fecha_ingreso)
-eliminar_anio(2021)
+archivo_no_existe()
+#eliminar_anio(2021)
 
 cursorMysql.close()
 conexion.close()
