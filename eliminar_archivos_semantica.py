@@ -18,8 +18,8 @@ port = 22
 username = config('SFTP_USER')
 password = config('SFTP_PASSWORD')
 
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#client = paramiko.SSHClient()
+#client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 def limpiar_errores_identificacion():
     client.connect(host, port, username, password)
@@ -79,25 +79,32 @@ def eliminar_anio(anio):
         os.listdir(directorio_backup)
         cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino, d.identificador \
                             FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk \
-                            WHERE d.codigo_masivo_tipo_fk = 'TteGuia' AND (g.fecha_ingreso >= '{anio}-01-01 00:00' AND g.fecha_ingreso <= '{anio}-12-31 23:00') LIMIT 50000")
+                            WHERE d.codigo_masivo_tipo_fk = 'TteGuia' AND (g.fecha_ingreso >= '{anio}-01-01 00:00' AND g.fecha_ingreso <= '{anio}-12-31 23:00') LIMIT 10")
         registros = cursorMysql.fetchall()
         for registro in registros:         
             ruta = f"{directorio_raiz}/{registro[1]}/{registro[2]}"
-            rutaDestino = f"{directorio_backup}/{registro[2]}"
+            rutaDestino = f"{directorio_backup}/{registro[1]}/{registro[2]}"
+            rutaDestinoRaiz = f"{directorio_backup}/{registro[1]}/"
+            #try:
+            #    sftp.stat(rutaDestinoRaiz)
+            #except FileNotFoundError:
+            #    sftp.mkdir(rutaDestinoRaiz)
+            if not os.path.exists(rutaDestinoRaiz):            
+                os.makedirs(rutaDestinoRaiz)
             mensaje = ""
             try:
                 #sftp.stat(ruta)
-                #sftp.rename(ruta, ruta)
+                #sftp.rename(ruta, rutaDestino)
                 os.listdir(directorio_backup)
                 os.rename(ruta, rutaDestino)
                 mensaje = "Archivo movido a backup"            
             except FileNotFoundError:
                 mensaje = "No existe"
             try:
-                cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")
-                mensaje = f"{mensaje} / Registro eliminado"
+                cursorMysql.execute(f"UPDATE doc_masivo SET backup = true where codigo_masivo_pk={registro[0]}")
+                mensaje = f"{mensaje} / Registro actualizado"
             except mysql.connector.Error as error:
-                mensaje = f"{mensaje} / No se pudo eliminar el registro: {error}"            
+                mensaje = f"{mensaje} / No se pudo actualizar el registro: {error}"            
             print(f"{registro[0]} {ruta} {mensaje}")
         conexion.commit()        
     except FileNotFoundError:
@@ -106,7 +113,7 @@ def eliminar_anio(anio):
 #limpiar_errores_identificacion()
 #limpiar_errores_singuia()
 #SELECT YEAR(g.fecha_ingreso) AS año, COUNT(*) AS total_ingresos FROM doc_masivo d LEFT JOIN tte_guia g ON d.identificador = g.codigo_guia_pk WHERE d.codigo_masivo_tipo_fk = 'TteGuia'GROUP BY YEAR(g.fecha_ingreso)
-#eliminar_anio(2022)
+eliminar_anio(2020)
 
 cursorMysql.close()
 conexion.close()
