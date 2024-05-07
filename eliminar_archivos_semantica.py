@@ -82,7 +82,7 @@ def archivo_no_existe():
         cursorMysql.execute(f"SELECT d.codigo_masivo_pk, d.directorio, d.archivo_destino FROM \
                             doc_masivo d WHERE d.backup = false AND d.codigo_masivo_tipo_fk = 'TteGuia' ORDER BY d.codigo_masivo_pk LIMIT {registros_por_pagina} OFFSET {offset}")
         registros = cursorMysql.fetchall()
-        if not registros or pagina == 20:        
+        if not registros or pagina == 50:        
             break   
              
         for registro in registros:         
