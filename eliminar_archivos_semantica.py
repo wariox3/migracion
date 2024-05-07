@@ -13,10 +13,10 @@ conexion = mysql.connector.connect(
     database=config('MYSQL_BASEDATOS'))
 cursorMysql = conexion.cursor()
 
-host = config('SFTP_HOST')
-port = 22
-username = config('SFTP_USER')
-password = config('SFTP_PASSWORD')
+#host = config('SFTP_HOST')
+#port = 22
+#username = config('SFTP_USER')
+#password = config('SFTP_PASSWORD')
 
 #client = paramiko.SSHClient()
 #client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
