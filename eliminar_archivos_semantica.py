@@ -91,7 +91,7 @@ def archivo_no_existe():
                 #print(f"{registro[0]} {ruta} archivo verificado")
                 correctos = correctos + 1
             else:
-                #cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")        
+                cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")        
                 invalidos = invalidos + 1
                 print(f"{registro[0]} {ruta} no se encontro el archivo")
             '''try:
@@ -99,13 +99,13 @@ def archivo_no_existe():
                 print(f"{registro[0]} {ruta} archivo verificado")
             except FileNotFoundError:
                 try:
-                    #cursorMysql.execute(f"UPDATE doc_masivo SET backup = true where codigo_masivo_pk={registro[0]}")        
+                    #cursorMysql.execute(f"DELETE FROM doc_masivo where codigo_masivo_pk={registro[0]}")        
                     print(f"{registro[0]} {ruta} no se encontro el archivo")
                 except mysql.connector.Error as error:
                     print(f"No se pudo eliminar el registro: {error}")'''
         pagina += 1   
     print(f"Correctos: {correctos} Invalidos: {invalidos}")         
-    #conexion.commit()        
+    conexion.commit()        
 
 
 def eliminar_anio(anio):    
