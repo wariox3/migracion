@@ -213,11 +213,11 @@ def importar_movimiento():
             comentario = formatear_texto(registro[12])              
             resolucion_id = formatear_numero(registro[11])        
             sql = f"INSERT INTO gen_documento (id, subtotal, total_bruto, total, descuento, estado_aprobado, estado_anulado, estado_electronico, estado_electronico_enviado, estado_electronico_notificado, \
-                            documento_tipo_id, empresa_id, metodo_pago_id, cobrar, cobrar_afectado, cobrar_pendiente, numero, fecha, \
+                            documento_tipo_id, empresa_id, metodo_pago_id, afectado, pendiente, numero, fecha, \
                             fecha_contable, fecha_vence, base_impuesto, impuesto, contacto_id, resolucion_id, comentario, cue, \
                             soporte, documento_referencia_id) \
                             VALUES ({registro[0]}, {registro[2]}, {registro[3]}, {registro[4]}, 0, true, false, false, false, false, \
-                            {documentoTipo}, 1, 1, 0, 0, 0, {registro[5]}, '{registro[6]}', \
+                            {documentoTipo}, 1, 1, 0, 0, {registro[5]}, '{registro[6]}', \
                             '{registro[6]}', '{registro[7]}', {registro[8]}, {registro[9]}, {registro[10]}, {resolucion_id}, {comentario}, '{registro[13]}', \
                             {soporte}, {documentoReferencia})"            
             cursorPg.execute(sql)
@@ -228,9 +228,9 @@ def importar_movimiento():
             for registroDetalle in registrosDetalles:
                 print(f"Detalle: {registroDetalle[0]}")
                 sql = f"INSERT INTO gen_documento_detalle (id, cantidad, precio, subtotal, total_bruto, total, \
-                                descuento, porcentaje_descuento, documento_id, item_id) \
+                                descuento, porcentaje_descuento, base_impuesto, impuesto, documento_id, item_id, pago) \
                                 VALUES ({registroDetalle[0]}, {registroDetalle[1]}, {registroDetalle[2]}, {registroDetalle[3]}, {registroDetalle[4]}, {registroDetalle[4]}, \
-                                0, {registroDetalle[5]}, {registro[0]}, {registroDetalle[6]})" 
+                                0, {registroDetalle[5]}, {registroDetalle[8]}, {registroDetalle[9]}, {registro[0]}, {registroDetalle[6]}, 0)" 
                 cursorPg.execute(sql)
                 if registroDetalle[7] == 19:
                     sql = f"INSERT INTO gen_documento_impuesto (base, porcentaje, total, documento_detalle_id, impuesto_id) \
