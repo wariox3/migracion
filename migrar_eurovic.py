@@ -2,7 +2,7 @@ import mysql.connector
 from decouple import config
 
 conexion = mysql.connector.connect(host=config('MYSQL_SERVIDOR'), user=config('MYSQL_USUARIO'), password=config('MYSQL_CLAVE'),database=config('MYSQL_BASEDATOS'))
-conexion_destino = mysql.connector.connect(host=config('MYSQL_SERVIDOR'), user=config('MYSQL_USUARIO'), password=config('MYSQL_CLAVE'),database=config('MYSQL_BASEDATOS_DESTINO'))
+conexion_destino = mysql.connector.connect(host=config('MYSQL_SERVIDOR_DESTINO'), user=config('MYSQL_USUARIO_DESTINO'), password=config('MYSQL_CLAVE_DESTINO'),database=config('MYSQL_BASEDATOS_DESTINO'),port=config('MYSQL_PUERTO_DESTINO'))
 
 cursor = conexion.cursor(dictionary=True)
 cursor_destino = conexion_destino.cursor()
