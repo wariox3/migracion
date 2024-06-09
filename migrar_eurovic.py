@@ -83,7 +83,7 @@ def migrar_pago():
                 if concepto == 22:
                     concepto = 6
                 if concepto == 566:
-                    concepto == 508
+                    concepto = 508
                 if concepto == 27:
                     concepto = 517
                 valores_detalle = (
