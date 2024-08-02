@@ -14,8 +14,8 @@ def migrar_pago():
                         cc.codigo_interface as codigo_grupo_fk \
                         FROM rhu_pago p \
                         LEFT JOIN rhu_centro_costo cc ON p.codigo_centro_costo_fk=cc.codigo_centro_costo_pk \
-                        WHERE p.fecha_desde >= '2024-01-01' AND p.estado_pagado = 1 AND p.codigo_empleado_semantica_fk IS NOT NULL \
-                        ORDER BY p.fecha_desde LIMIT 10000")
+                        WHERE p.fecha_desde >= '2024-01-01' AND p.estado_pagado = 1 \
+                        ORDER BY p.fecha_desde LIMIT 100000000")
     sql = "INSERT INTO rhu_pago (codigo_pago_pk, fecha_desde, fecha_hasta, fecha_desde_contrato, fecha_hasta_contrato, fecha, codigo_grupo_fk, numero, \
                 vr_salario_contrato, dias, vr_devengado, vr_deduccion, vr_neto, vr_ingreso_base_cotizacion, vr_ingreso_base_prestacion, \
                 vr_salario, vr_auxilio_transporte, vr_devengado_prestacional, vr_devengado_no_prestacional, \
