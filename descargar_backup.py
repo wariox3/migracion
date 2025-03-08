@@ -37,6 +37,6 @@ def listar_archivos(bucket_name):
 
         print(f"Archivo guardado en: {ruta_destino}")
         archivos_descargados += 1        
-        if archivos_descargados >= 2500:
+        if archivos_descargados >= 1:
             break
 listar_archivos(config('B2_BUCKET_NAME'))

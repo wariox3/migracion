@@ -10,12 +10,18 @@ cuentas = []
 
 for index, row in df.iterrows():
     cuenta = {
-        "model": "contabilidad.Cuenta",
+        "model": "contabilidad.ConCuenta",
         "pk": row['id'],
         "fields": {
             "codigo": row['codigo'],
             "nombre": row['nombre'],
-            "cuenta_clase": row['cuenta_clase_id']
+            "cuenta_clase": row['cuenta_clase_id'],
+            "cuenta_grupo": row['cuenta_grupo_id'],
+            "cuenta_cuenta": row['cuenta_cuenta_id'],
+            "exige_base": row['exige_base'],
+            "exige_contacto": row['exige_contacto'],
+            "exige_grupo": row['exige_grupo'],
+            "permite_movimiento": row['permite_movimiento'],
         }
     }
     cuentas.append(cuenta)
